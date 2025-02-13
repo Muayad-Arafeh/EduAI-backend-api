@@ -15,6 +15,9 @@ namespace EduAIAPI.Models
         [BsonElement("passwordHash")]
         public string PasswordHash { get; set; } = string.Empty;
 
+        [BsonElement("salt")]
+        public string Salt { get; set; } = string.Empty;
+
         [BsonElement("role")]
         public string Role { get; set; } = "Student"; // Default role is "Student"
     }
