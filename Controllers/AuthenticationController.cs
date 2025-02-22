@@ -12,19 +12,19 @@ namespace EduAIAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class AuthenticationController : ControllerBase
     {
         private readonly MongoDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public UserController(MongoDbContext context, IConfiguration configuration)
+        public AuthenticationController(MongoDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(LoginRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // Check if the user already exists
             var existingUser = await _context.Users
@@ -42,6 +42,7 @@ namespace EduAIAPI.Controllers
             // Create a new user
             var user = new User
             {
+                Name = request.Name, // Set the user's name
                 UniversityNumber = request.UniversityNumber,
                 PasswordHash = hashedPassword,
                 Salt = salt,
@@ -55,7 +56,7 @@ namespace EduAIAPI.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             // Find the user by university number
             var user = await _context.Users
@@ -77,7 +78,7 @@ namespace EduAIAPI.Controllers
 
             // Generate a JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!); // Use null-forgiving operator
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]

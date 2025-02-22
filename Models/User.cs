@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 
 namespace EduAIAPI.Models
 {
@@ -8,6 +9,9 @@ namespace EduAIAPI.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
+
+        [BsonElement("name")]
+        public string Name { get; set; } = string.Empty; // Add this line
 
         [BsonElement("universityNumber")]
         public string UniversityNumber { get; set; } = string.Empty;
@@ -20,5 +24,8 @@ namespace EduAIAPI.Models
 
         [BsonElement("role")]
         public string Role { get; set; } = "Student"; // Default role is "Student"
+
+        [BsonElement("enrolledCourses")]
+        public List<string> EnrolledCourses { get; set; } = new List<string>(); // List of course IDs
     }
 }

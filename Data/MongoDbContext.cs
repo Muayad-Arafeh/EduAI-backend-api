@@ -13,8 +13,9 @@ namespace EduAIAPI.Data
             _database = client.GetDatabase("EduAI");
         }
 
-        public IMongoCollection<Lecture> Lectures => _database.GetCollection<Lecture>("Lectures");
-        
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
+        public IMongoCollection<Course> Courses => _database.GetCollection<Course>("Courses");
+        public IMongoCollection<Topic> Topics => _database.GetCollection<Topic>("Topics");
+        public IMongoCollection<Lecture> Lectures => _database.GetCollection<Lecture>("Lectures");
     }
 }
