@@ -42,9 +42,9 @@ namespace EduAIAPI.Controllers
                 return Unauthorized("User not authenticated.");
             }
 
-            // Find the teacher's course (assuming a teacher can only manage one course)
+            // Find the teacher's course
             var course = await _context.Courses
-                .Find(c => c.UniversityNumber == universityNumber) // Use UniversityNumber instead of TeacherName
+                .Find(c => c.UniversityNumber == universityNumber)
                 .FirstOrDefaultAsync();
 
             if (course == null)
@@ -57,11 +57,11 @@ namespace EduAIAPI.Controllers
             {
                 Title = topicDto.Title,
                 Description = topicDto.Description,
-                Course = course.Id, // Set the course ID from the teacher's context
-                Lectures = new List<string>() // Initialize an empty list of lectures
+                Course = course.Id,
+                Lectures = new List<string>()
             };
 
-            // Save the topic to the database (MongoDB will auto-generate the Id)
+            // Save the topic to the database
             await _context.Topics.InsertOneAsync(topic);
 
             // Add the topic to the course's list of topics
@@ -69,6 +69,48 @@ namespace EduAIAPI.Controllers
             await _context.Courses.ReplaceOneAsync(c => c.Id == course.Id, course);
 
             return Ok("Topic added successfully.");
+        }
+
+        [HttpDelete("{topicId}")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> DeleteTopic(string topicId)
+        {
+            // Get the current user's university number from the JWT token
+            var universityNumber = User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(universityNumber))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+            // Find the topic
+            var topic = await _context.Topics
+                .Find(t => t.Id == topicId)
+                .FirstOrDefaultAsync();
+
+            if (topic == null)
+            {
+                return NotFound("Topic not found.");
+            }
+
+            // Find the course that owns the topic
+            var course = await _context.Courses
+                .Find(c => c.Id == topic.Course)
+                .FirstOrDefaultAsync();
+
+            if (course == null || course.UniversityNumber != universityNumber)
+            {
+                return Unauthorized("You do not have permission to delete this topic.");
+            }
+
+            // Remove the topic from the course's list of topics
+            course.Topics.Remove(topicId);
+            await _context.Courses.ReplaceOneAsync(c => c.Id == course.Id, course);
+
+            // Delete the topic
+            await _context.Topics.DeleteOneAsync(t => t.Id == topicId);
+
+            return Ok("Topic deleted successfully.");
         }
     }
 }

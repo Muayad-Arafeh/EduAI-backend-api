@@ -4,6 +4,7 @@ using EduAIAPI.Models;
 using MongoDB.Driver;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using MongoDB.Bson;
 
 namespace EduAIAPI.Controllers
 {
@@ -85,14 +86,36 @@ namespace EduAIAPI.Controllers
             {
                 Name = courseDto.Name,
                 TeacherName = courseDto.TeacherName,
-                UniversityNumber = universityNumber, // Set the teacher's university number from the JWT token
-                Topics = new List<string>() // Initialize an empty list of topics
+                UniversityNumber = universityNumber,
+                Topics = new List<string>()
             };
 
-            // Save the course to the database (MongoDB will auto-generate the Id)
+            // Save the course to the database
             await _context.Courses.InsertOneAsync(course);
 
             return Ok("Course added successfully.");
+        }
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<IActionResult> SearchCourses([FromQuery] string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Search query cannot be empty.");
+            }
+
+            // Perform a case-insensitive search for courses by name or teacher name
+            var filter = Builders<Course>.Filter.Or(
+                Builders<Course>.Filter.Regex(c => c.Name, new BsonRegularExpression(query, "i")),
+                Builders<Course>.Filter.Regex(c => c.TeacherName, new BsonRegularExpression(query, "i"))
+            );
+
+            var courses = await _context.Courses
+                .Find(filter)
+                .ToListAsync();
+
+            return Ok(courses);
         }
     }
 }
