@@ -98,11 +98,12 @@ namespace EduAIAPI.Controllers
 
         [HttpGet("search")]
         [Authorize]
-        public async Task<IActionResult> SearchCourses([FromQuery] string query)
+        public async Task<IActionResult> SearchCourses([FromQuery] string? query=null)
         {
             if (string.IsNullOrEmpty(query))
             {
-                return BadRequest("Search query cannot be empty.");
+                var allCourses = await _context.Courses.Find(_ => true).ToListAsync();
+                return Ok(allCourses);
             }
 
             // Perform a case-insensitive search for courses by name or teacher name

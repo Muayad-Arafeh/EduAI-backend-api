@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EduAIAPI.Controllers
 {
@@ -42,7 +43,7 @@ namespace EduAIAPI.Controllers
             // Create a new user
             var user = new User
             {
-                Name = request.Name, // Set the user's name
+                Name = request.Name,
                 UniversityNumber = request.UniversityNumber,
                 PasswordHash = hashedPassword,
                 Salt = salt,
@@ -95,6 +96,32 @@ namespace EduAIAPI.Controllers
             var tokenString = tokenHandler.WriteToken(token);
 
             return Ok(new { Token = tokenString });
+        }
+
+        [HttpGet("role")]
+        [Authorize] // Ensure only authenticated users can access this endpoint
+        public async Task<IActionResult> GetUserRole()
+        {
+            // Get the current user's university number from the JWT token
+            var universityNumber = User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(universityNumber))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+            // Find the user in the database
+            var user = await _context.Users
+                .Find(u => u.UniversityNumber == universityNumber)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Return the user's role
+            return Ok(new { Role = user.Role });
         }
     }
 }
