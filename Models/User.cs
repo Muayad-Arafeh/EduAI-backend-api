@@ -11,7 +11,7 @@ namespace EduAIAPI.Models
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
         [BsonElement("name")]
-        public string Name { get; set; } = string.Empty; // Add this line
+        public string Name { get; set; } = string.Empty;
 
         [BsonElement("universityNumber")]
         public string UniversityNumber { get; set; } = string.Empty;
@@ -27,5 +27,8 @@ namespace EduAIAPI.Models
 
         [BsonElement("enrolledCourses")]
         public List<string> EnrolledCourses { get; set; } = new List<string>(); // List of course IDs
+
+        [BsonElement("lectureProgress")]
+        public Dictionary<string, double> LectureProgress { get; set; } = new Dictionary<string, double>(); // Lecture ID -> Timestamp (in seconds)
     }
 }

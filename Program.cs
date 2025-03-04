@@ -4,6 +4,9 @@ using System.Text;
 using EduAIAPI.Data;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using EduAIAPI.Services;
+
+//Can you explain this concept in simpler terms?
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +43,9 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register MongoDbContext as a service
 builder.Services.AddSingleton<MongoDbContext>();
+
+// Register CohereService
+builder.Services.AddHttpClient<ICohereService, CohereService>();
 
 // Add JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
