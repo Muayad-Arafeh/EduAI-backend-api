@@ -40,7 +40,7 @@ namespace EduAIAPI.Controllers
 
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound("User Not found.");
             }
 
             // Update lecture progress (if provided)
